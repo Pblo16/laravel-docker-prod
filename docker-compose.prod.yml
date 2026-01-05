@@ -85,6 +85,12 @@ services:
       - AUTO_MIGRATE=${AUTO_MIGRATE:-false}
       - AUTO_SEED=${AUTO_SEED:-false}
 
+      # Admin User
+      - ADMIN_NAME=${ADMIN_NAME:-Admin}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
+      - ADMIN_IDENTIFIER=${ADMIN_IDENTIFIER:-} # Email anterior si cambias ADMIN_EMAIL
+
       # Mail
       - MAIL_MAILER=${MAIL_MAILER:-log}
       - MAIL_HOST=${MAIL_HOST:-}

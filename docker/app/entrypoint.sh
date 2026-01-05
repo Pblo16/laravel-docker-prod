@@ -82,6 +82,12 @@ if [ "${AUTO_MIGRATE}" = "true" ]; then
   if [ "${AUTO_SEED}" = "true" ]; then
     echo "[Entrypoint] Ejecutando seeders (AUTO_SEED=true)..."
     su-exec www-data php artisan db:seed --force
+    
+    echo "[Entrypoint] Generando permisos..."
+    su-exec www-data php artisan generate:permissions || echo "[Entrypoint] Warning: generate:permissions falló"
+    
+    echo "[Entrypoint] Creando super admin..."
+    su-exec www-data php artisan create:super-admin "${ADMIN_EMAIL:-admin@example.com}" || echo "[Entrypoint] Warning: create:super-admin falló"
   else
     echo "[Entrypoint] Seeders omitidos (AUTO_SEED=${AUTO_SEED:-false})"
   fi
