@@ -1,0 +1,124 @@
+# Docker Compose para Dokploy - Solo usa imágenes pre-construidas
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    networks:
+      - sgc-network
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASSWORD}",
+        ]
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    restart: unless-stopped
+    networks:
+      - sgc-network
+    expose:
+      - "8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - CB_SERVER_NAME=SGC Database Manager
+      - CB_ADMIN_NAME=${DB_MANAGER_USER:-admin}
+      - CB_ADMIN_PASSWORD=${DB_MANAGER_PASSWORD:-admin}
+
+  app:
+    image: sgc_app:latest
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    restart: unless-stopped
+    networks:
+      - sgc-network
+    expose:
+      - "80"
+    environment:
+      # Laravel Config
+      - APP_NAME=${APP_NAME}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${APP_URL}
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
+      - APP_LOCALE=${APP_LOCALE:-es}
+
+      # Database
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+
+      # Cache & Queue
+      - CACHE_STORE=${CACHE_STORE:-file}
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
+      - SESSION_DRIVER=${SESSION_DRIVER:-file}
+
+      # Deployment
+      - AUTO_MIGRATE=${AUTO_MIGRATE:-false}
+      - AUTO_SEED=${AUTO_SEED:-false}
+
+      # Mail
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-}
+    volumes:
+      - storage_data:/var/www/storage/app/private
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80/up",
+        ]
+      start_period: 45s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mysql_data:
+  storage_data:
+  cloudbeaver_data:
+
+networks:
+  sgc-network:
+    driver: bridge
