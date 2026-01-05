@@ -2,63 +2,27 @@
 
 Configuración de Docker lista para producción para aplicaciones Laravel con Nginx, PHP-FPM, MySQL y CloudBeaver.
 
-## 🚀 Instalación Rápida
+## 🚀 Descarga Rápida
 
-Instala y configura todo con un solo comando:
+Descarga los archivos de configuración con un solo comando:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/Pblo16/laravel-docker-prod/main/install.sh | bash
 ```
 
-Este comando descargará el script de instalación y te guiará a través del proceso de configuración.
+El script te pedirá el nombre del directorio y descargará todos los archivos de configuración Docker.
 
-### ¿Qué hace el script de instalación?
+## 📦 ¿Qué incluye?
 
-1. ✅ Verifica que Docker y Docker Compose estén instalados
-2. 📦 Clona este repositorio
-3. ⚙️ Crea el archivo `.env` con tu configuración
-4. 🎯 Opcionalmente clona tu proyecto Laravel
-5. 🏗️ Construye las imágenes Docker
-6. 🚀 Inicia todos los servicios
-7. 🔑 Genera la `APP_KEY` de Laravel
-8. 📊 Ejecuta las migraciones (si está habilitado)
+Esta configuración incluye:
 
-## 📋 Prerrequisitos
-
-Antes de ejecutar el comando de instalación, asegúrate de tener instalado:
-
-- **Docker** (v20.10 o superior)
-
-  ```bash
-  # Ubuntu/Debian
-  curl -fsSL https://get.docker.com -o get-docker.sh
-  sudo sh get-docker.sh
-
-  # Agregar usuario al grupo docker
-  sudo usermod -aG docker $USER
-  ```
-
-- **Docker Compose** (v2.0 o superior)
-
-  ```bash
-  # Viene incluido con Docker Desktop
-  # Para Linux, verifica la instalación con:
-  docker compose version
-  ```
-
-- **Git**
-
-  ```bash
-  # Ubuntu/Debian
-  sudo apt-get install git
-
-  # CentOS/RHEL
-  sudo yum install git
-  ```
+- 🐘 **PHP 8.2-FPM** con Nginx optimizado para Laravel
+- 🗄️ **MySQL 8.0** con persistencia de datos
+- 🔧 **CloudBeaver** para gestión visual de base de datos
+- ⚙️ **Configuración lista para producción**
+- 🐳 **Docker Compose** pre-configurado
 
 ## 🛠️ Instalación Manual
-
-Si prefieres instalar manualmente:
 
 ### 1. Clonar el repositorio
 
@@ -136,11 +100,10 @@ laravel-docker-prod/
 ### 🗄️ MySQL
 
 - **Puerto:** 3306
-- MySQL 8.0
-- Persistencia de datos con volúmenes
-- Healthcheck configurado
 
-### 🔧 CloudBeaver
+# Limpiar y optimizar cache
+
+docker compose -f docker-compose.prod.yml exec app php artisan optimiz
 
 - **Puerto:** 8978
 - Interfaz web para gestión de base de datos
