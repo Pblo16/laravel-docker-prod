@@ -41,26 +41,70 @@ RUN pnpm build
 # Stage 3: Runtime final
 FROM php:8.3-fpm-alpine
 
-# Instalar dependencias del sistema y extensiones PHP
+# ==============================================
+# Dependencias del sistema (comunes)
+# ==============================================
 RUN apk add --no-cache \
     nginx \
-    wget \
+    curl \
     su-exec \
     netcat-openbsd \
     libzip \
     icu-libs \
     libintl \
     oniguruma \
-    mysql-client \
     icu-data-full
 
-# Instalar extensiones PHP (temporal con -dev packages)
+# ==============================================
+# DRIVERS DE BASE DE DATOS
+# Descomenta SOLO el bloque que necesites
+# ==============================================
+
+# ────────────────────────────────────────────
+# Opción A: PostgreSQL (ACTIVO por defecto)
+# ────────────────────────────────────────────
+RUN apk add --no-cache \
+    postgresql-client \
+    libpq
+
 RUN apk add --no-cache --virtual .build-deps \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql intl zip opcache \
+    libpq-dev \
+    && docker-php-ext-install -j$(nproc) pdo pdo_pgsql pgsql intl zip opcache \
     && apk del .build-deps
+
+# ────────────────────────────────────────────
+# Opción B: MySQL/MariaDB (COMENTADO)
+# Descomenta estas líneas y comenta el bloque PostgreSQL
+# ────────────────────────────────────────────
+# RUN apk add --no-cache \
+#     mysql-client
+
+# RUN apk add --no-cache --virtual .build-deps \
+#     libzip-dev \
+#     icu-dev \
+#     oniguruma-dev \
+#     && docker-php-ext-install -j$(nproc) pdo pdo_mysql intl zip opcache \
+#     && apk del .build-deps
+
+# ────────────────────────────────────────────
+# Opción C: AMBOS (MySQL + PostgreSQL)
+# Solo si realmente necesitas ambos drivers
+# ────────────────────────────────────────────
+# RUN apk add --no-cache \
+#     mysql-client \
+#     postgresql-client \
+#     libpq
+
+# RUN apk add --no-cache --virtual .build-deps \
+#     libzip-dev \
+#     icu-dev \
+#     oniguruma-dev \
+#     libpq-dev \
+#     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql pgsql intl zip opcache \
+#     && apk del .build-deps
 
 WORKDIR /var/www
 
@@ -95,6 +139,9 @@ RUN chown -R www-data:www-data storage bootstrap/cache public \
     && chmod -R 775 storage bootstrap/cache \
     && chmod -R 755 public
 
+# Agregar usuario nginx al grupo www-data para acceso compartido
+RUN addgroup nginx www-data
+
 # Configuración PHP y PHP-FPM
 COPY docker/app/php.ini /usr/local/etc/php/conf.d/laravel.ini
 COPY docker/app/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
@@ -110,6 +157,6 @@ EXPOSE 80
 
 # Healthcheck para monitoreo del contenedor
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:80/up || exit 1
+    CMD curl -f http://127.0.0.1/up || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
