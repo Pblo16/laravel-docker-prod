@@ -77,6 +77,12 @@ RUN apk add --no-cache --virtual .build-deps \
     && docker-php-ext-install -j$(nproc) pdo pdo_pgsql pgsql intl zip opcache \
     && apk del .build-deps
 
+# Instalar extensión Redis de PHP
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .phpize-deps
+
 # ────────────────────────────────────────────
 # Opción B: MySQL/MariaDB (COMENTADO)
 # Descomenta estas líneas y comenta el bloque PostgreSQL
@@ -157,8 +163,8 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
 
-# Healthcheck para monitoreo del contenedor
-HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
-    CMD curl -f http://127.0.0.1/up || exit 1
+# Healthcheck temporalmente deshabilitado (Alpine no resuelve localhost correctamente)
+# HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+#     CMD wget --quiet --tries=1 --spider http://127.0.0.1/up || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

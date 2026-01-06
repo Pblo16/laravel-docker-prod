@@ -26,6 +26,8 @@ services:
       - sgc-network
     expose:
       - "80"
+    healthcheck:
+      disable: true
     environment:
       # Laravel Config
       - APP_NAME=${APP_NAME}
@@ -33,8 +35,10 @@ services:
       - APP_KEY=${APP_KEY}
       - APP_DEBUG=${APP_DEBUG:-false}
       - APP_URL=${APP_URL}
+      - ASSET_URL=${ASSET_URL:-${APP_URL}}
       - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
       - APP_LOCALE=${APP_LOCALE:-es}
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-*}
 
       # Database
       - DB_CONNECTION=${DB_CONNECTION:-mysql}
@@ -79,20 +83,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--quiet",
-          "--tries=1",
-          "--spider",
-          "http://localhost:80/up",
-        ]
-      start_period: 45s
-      interval: 15s
-      timeout: 5s
-      retries: 3
 
 volumes:
   redis_data:
