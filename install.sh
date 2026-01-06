@@ -28,8 +28,8 @@ echo -e "${BLUE}[INFO]${NC} Descargando archivos desde GitHub..."
 REPO_URL="https://github.com/Pblo16/laravel-docker-prod"
 BRANCH="main"
 
-# Descargar y extraer tarball
-curl -sL "${REPO_URL}/archive/refs/heads/${BRANCH}.tar.gz" | tar xz --strip-components=1
+# Descargar y extraer tarball (excluyendo README.md)
+curl -sL "${REPO_URL}/archive/refs/heads/${BRANCH}.tar.gz" | tar xz --strip-components=1 --exclude='*/README.md'
 
 # Eliminar el script de instalación descargado (para evitar confusión)
 rm -f install.sh
