@@ -129,4 +129,7 @@ su-exec www-data php artisan view:cache
 echo "[Entrypoint] Iniciando PHP-FPM y Nginx..."
 php-fpm -D
 
+# Tail logs de Laravel a stdout para docker logs
+tail -f storage/logs/laravel.log 2>/dev/null &
+
 exec nginx -g 'daemon off;'

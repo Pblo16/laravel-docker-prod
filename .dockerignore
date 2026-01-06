@@ -11,6 +11,7 @@ vendor
 .env
 .env.*
 !.env.example
+.env.prod.example
 
 # Storage & Cache
 storage/logs
@@ -50,3 +51,6 @@ docker-compose.*.yml
 README.md
 *.md
 !database/**/*.md
+CHANGELOG.md
+LICENSE
+install.sh

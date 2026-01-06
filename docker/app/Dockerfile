@@ -29,10 +29,12 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY --from=composer-deps /app/vendor ./vendor
 
 # Copiar archivos de configuración necesarios para el build
-COPY vite.config.js postcss.config.js ./
+COPY vite.config.js postcss.config.js tailwind.config.js ./
 
-# Copiar recursos necesarios para compilación
-COPY resources ./resources
+# Copiar SOLO recursos necesarios para compilación
+COPY resources/css ./resources/css
+COPY resources/js ./resources/js
+COPY resources/views ./resources/views
 COPY public ./public
 
 # Build de assets
